@@ -1,0 +1,20 @@
+aligment
+SAM/BAM
+
+1.id
+2.flag
+3.chr
+4.start
+5.mapping quality
+6.CIGAR
+7.mate chr
+8.mate start
+9.mate dist
+10.sequence
+11.sequence quality
+12.alignment
+13.edit distance
+14.number of hits
+15.strand
+16.hit index
+
