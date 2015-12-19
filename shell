@@ -51,7 +51,7 @@ extract chromosome position:
 
 samtools sort x.bam x.sorted (generate x.sorted.bam)
 samtools index x.sorted.bam (generate x.sorted.bam.bai)
-samtools view –b x.sorted.bam “Chr3:1000-2000” > x.subset.bam
+samtools view –b x.sorted.bam “Chr3:1000-2000” > x.subset.bam  (* -b is very important *)
 
 11-15
 11.how many sequences
