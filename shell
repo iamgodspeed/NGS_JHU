@@ -34,3 +34,59 @@ comm -1 -3 apple.A.genes apple.B.genes | wc -l
 
 10.common among A B C
 cat apple.genes.{A,B,C} | sort | uniq -c | grep " 3 " | wc -l
+
+section 2
+1.how many alignment in bam
+samtools flagstat x.bam
+samtools view x.bam | wc -l
+samtools view x.bam | cut -f3 | grep -v "*" | wc -l
+
+2.how many alignment shows mate unmapped (mapped)
+samtools view x.bam | cut -f7 | grep "*" | wc -l ("=")
+
+3.how many alignments contain Deletion(spliced)
+samtools view x.bam | cut -f6 | grep D | wc -l (N)
+
+extract chromosome position:
+
+samtools sort x.bam x.sorted (generate x.sorted.bam)
+samtools index x.sorted.bam (generate x.sorted.bam.bai)
+samtools view –b x.sorted.bam “Chr3:1000-2000” > x.subset.bam
+
+11-15
+11.how many sequences
+samtools view -H x.bam | grep "SN:" | wc -l
+
+12.length of the first sequence
+samtools view -H x.bam | grep "SN:" | more
+
+13.aligner was used
+samtools view –H x.bam | grep “^@PG” (^start of the line)
+
+14.id of the first sequence
+samtools view x.bam | head -1 | cut -f1
+
+15.start position of mate
+samtools view x.bam | head -1 | cut -f7,8
+
+16-20
+16.how many overlaps
+bedtools intersect -abam x.bam -b x_annot.gtf -bed -wo > overlaps.bed
+-abam
+-bed
+
+17.how many these overlaps are longer than 10 bases
+cut –f22 overlaps.bed | sort –nrk1 > lengths
+
+18.how many alignments overlap annotation
+cut -f1-12 overlaps.bed | sort -u | wc -l
+The minimum information needed to define the alignments is contained in columns 1-5
+which include the read ID and the flag
+specifying whether this is read 1 or read 2 in a pair with the same read ID).
+
+19.how many exons overlap alignments
+cut -f13-21 overlaps.bed | sort -u | wc -l
+
+20.how many transcripts in annotation.gtf (in BED file, each line = 1 transcript)
+cut -f9 x_annot.gtf | cut -d ' ' -f1,2 |  sort -u
+
