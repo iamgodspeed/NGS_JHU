@@ -1,0 +1,8 @@
+BED
+chr start end name score strand thick_start thick_end RGB
+
+GTF
+chr program feature start end score strand frame gene_id ; txpt_id
+
+GFF3
+chr source feature start end score strand frame ID ; name ; parent
