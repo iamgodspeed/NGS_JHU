@@ -90,3 +90,73 @@ cut -f13-21 overlaps.bed | sort -u | wc -l
 20.how many transcripts in annotation.gtf (in BED file, each line = 1 transcript)
 cut -f9 x_annot.gtf | cut -d ' ' -f1,2 |  sort -u
 
+section 3
+reference : x.fas
+sequence : x.fastq
+1.how many sequences in genome (Ref)
+grep "^>" x.fas | wc -l
+
+2.name of the third sequence
+grep “^>” x.fas | head -3 | tail -1
+
+4.how many index bowtie2 creates
+bowtie2-build x.fas ./index/index
+
+5.extension of index files
+bt2
+
+6.how many reads in fastq file
+wc -l x.fastq
+
+7.full match vs local match
+bowtie2 –x ./index –U x.fastq –S out.full.sam
+bowtie2 –x ./index –U x.fastq –S out.local.sam --local
+
+filter mapped only
+cat out.full.sam | grep -v "^@" | cut -f3 | grep -v "*" | wc -l
+cat out.local.sam | grep -v "^@" | cut -f3 | grep -v "*" | wc -l
+
+8.reads mapped
+a read may have 0 (unmapped), 1 (unique), or multiple alignments in a SAM file
+default bowtie2 reports only one match per read
+= alignment
+
+10.how many alignments contain in dels
+cut –f6 out.full.sam | grep –c “[I,D]”
+cut –f6 out.local.sam | grep –c “[I,D]”
+
+11.how many "chr3" in vcf
+samtools view –bT x.fas out.full.sam > out.full.bam
+samtools sort out.full.bam out.full.sorted
+samtools mpileup –f x.fas –uv out.full.sorted.bam > out.full.mpileup.vcf
+cat out.full.mpileup.vcf | grep –v “^#” | cut –f1 | grep –c “^Chr3”
+
+12.
+cat out.full.mpileup.vcf | grep –v “^#” | cut –f4 | grep –p “^A$”
+
+13. supporting reads
+cat out.full.mpileup.vcf | grep –v “^#” | grep –c “DP=20;”
+
+14.
+cat out.full.mpileup.vcf | grep –v “^#” | grep –c INDEL
+
+15.
+cat out.full.mpileup.vcf | grep –v “^#” | cut –f1,2 | grep Chr1 | grep 175672
+
+16-20 BCF
+16.
+samtools mpileup –f x.fas –g out.full.sorted.bam > out.full.mpileup.bcf
+bcftools call –m –v –O v out.full.mpileup.bcf > out.final.vcf
+cat out.final.vcf | grep –v “^#” |  cut –f1 | sort | uniq –c | grep “Chr3”
+
+17. A->T
+cat out.final.vcf | grep –v “^#” | cut –f4,5 | grep –p “^A\tT$” | wc -l
+
+18.
+cat out.final.vcf | grep –v “^ #” | grep –c INDEL
+
+19.
+cat out.final.vcf | grep –v “^#” | grep –c “DP=20;”
+
+20.
+cat out.final.vcf | grep –v “^#” | cut -f1-5 | grep Chr3 | grep 11937923
