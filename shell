@@ -160,3 +160,78 @@ cat out.final.vcf | grep –v “^#” | grep –c “DP=20;”
 
 20.
 cat out.final.vcf | grep –v “^#” | cut -f1-5 | grep Chr3 | grep 11937923
+
+section 4
+1-5 TOPHAT
+mkdir Tophat
+mkdir Tophat/X
+mkdir Tophat/Y
+
+mkdir index
+bowtie2-build index.fa index/index
+cp index.fa index/
+
+tophat -o Tophat/X/ index/index x.fastq
+tophat -o Tophat/Y/ index/index y.fastq
+
+check align_summary.txt
+
+6-10 CUFFLINKS
+mkdir Cufflinks
+mkdir Cufflinks/X
+mkdir Cufflinks/Y
+
+cufflinks -o Cufflinks/X -L x Tophat/X/accepted_hits.bam
+(specified labels as prefix for naming the assembled transcripts)
+cufflinks -o Cufflinks/Y -L y Tophat/Y/accepted_hits.bam
+
+how many genes
+cut -f9 Cufflinks/X/transcripts.gtf | cut -d ' ' -f2 | sort -u | wc -l
+cut -f9 Cufflinks/Y/transcripts.gtf | cut -d ' ' -f2 | sort -u | wc -l
+
+how many transcripts
+cut -f9 Cufflinks/X/transcripts.gtf | cut -d ' ' -f4 | sort -u | wc -l
+cut -f9 Cufflinks/Y/transcripts.gtf | cut -d ' ' -f4 | sort -u | wc -l
+
+single transcript genes
+cut -f9 Cufflinks/X/transcripts.gtf | cut -d ' ' -f2,4 | sort -u | cut -d ' ' -f1 | sort | uniq -c | grep -c "1"
+cut -f9 Cufflinks/Y/transcripts.gtf | cut -d ' ' -f2,4 | sort -u | cut -d ' ' -f1 | sort | uniq -c | grep -c "1"
+
+multi exon transcripts
+transcripts - single exon transcripts
+
+11-15 CUFFCOMPARE
+cd Cufflinks/X
+cuffcompare -r ../../xy.gtf -R transcripts.gtf
+
+cd Cufflinks/Y
+cuffcompare -r ../../xy.gtf -R transcripts.gtf
+
+cut -f3 cuffcmp.transcripts.gtf.tmap | sort | uniq -c
+
+=:fully reconstructed
+c:partial
+j:novel
+i:intron
+
+grep gene_name cuffcmp.transcripts.gtf.tmap
+
+16-20 CUFFDIFF
+GTFs.txt
+Cufflinks/*/transcripts.gtf 
+
+cuffmerge -g xy.gtf GTF.txt
+genes
+cut -f9 merged_asm/merged.gtf | cut -d ' ' -f2 | sort -u | wc -l
+transcripts
+cut -f9 merged_asm/merged.gtf | cut -d ' ' -f4 | sort -u | wc -l
+
+cuffdiff -o Cuffdiff merged_asm/merged.gtf Tophat/X/accepted_hits.bam Tophat/Y/accepted_hits.bam
+
+wc -l gene_exp.diff
+
+genes differentlly expressed
+grep -c yes gene_exp.diff
+
+transcripts differentlly expressed
+grep -c yes isoform_exp.diff
