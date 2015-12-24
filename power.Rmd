@@ -4,9 +4,9 @@ output: html_document
 ---
 
 power is a function of 
-1.sample size n
-2.effect size delta difference between groups
-3.variance
+1.sample size n 
+2.effect size delta difference between groups 
+3.variance 
 
 ```{r}
 power.t.test(n=10,delta=5,sd=10)
