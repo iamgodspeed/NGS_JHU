@@ -1,0 +1,58 @@
+```{r}
+library(devtools)
+library(Biobase)
+
+con = url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/montpick_eset.RData")
+file = load(con)
+close(con)
+
+mp = montpick.eset
+pdata = pData(mp)
+edata = as.data.frame(exprs(mp))
+fdata = fData(mp)
+
+edata = edata[rowMeans(edata)>100,]
+edata = log2(edata+1)
+```
+
+SVD1 by row normalization
+========================
+center the data by rows, compare diff genes(columns)
+```{r}
+edata_centered = edata - rowMeans(edata)
+```
+svd : d u v
+```{r}
+svd1 = svd(edata_centered)
+names(svd1)
+```
+
+```{r}
+plot(svd1$d, ylab = "singular values", col =2)
+plot(svd1$d^2/sum(svd1$d^2),ylab = "percent variance explained", col = 2)
+```
+
+PCA
+```{r}
+plot(svd1$v[,1],col=2,ylab="1st PC")
+plot(svd1$v[,2],col=2,ylab="2nd PC")
+plot(svd1$v[,1],svd1$v[,2],ylab="2nd PC",xlab="1st PC",col=as.numeric(pdata$study))
+boxplot(svd1$v[,1] ~ pdata$study, border=c(1,2))
+points(svd1$v[,1] ~ jitter(as.numeric(pdata$study)), col = as.numeric(pdata$study))
+```
+
+PCA by prcomp
+```{r}
+pc1 = prcomp(edata)
+plot(pc1$rotation[,1],svd1$v[,1]) # first principal component vs singular vector
+```
+
+SVD2
+====
+```{r}
+edata_centered2 = t(t(edata)-colMeans(edata))
+svd2 = svd(edata_centered2)
+plot(pc1$rotation[,1],svd2$v[,1],col=2) # exactly same pca(between column) svd(column)
+```
+
+
