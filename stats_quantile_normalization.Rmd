@@ -1,0 +1,46 @@
+```{r}
+library(devtools)
+library(Biobase)
+library(preprocessCore)
+
+con = url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/montpick_eset.RData")
+file = load(con)
+close(con)
+
+mp = montpick.eset
+pdata = pData(mp)
+edata = as.data.frame(exprs(mp))
+fdata = fData(mp)
+```
+
+```{r}
+edata = log2(edata + 1)
+edata = edata[rowMeans(edata)>3,]
+```
+density of the first sample
+```{r}
+plot(density(edata[,1]),ylim=c(0,0.2))
+for(i in 2:20){
+  lines(density(edata[,i]),col=i)
+}
+```
+quantile normalization
+```{r}
+norm_edata = normalize.quantiles(as.matrix(edata))
+plot(density(norm_edata[,1]),ylim=c(0,0.2))
+for(i in 2:20){
+  lines(density(norm_edata[,i]),col=i)
+}
+```
+
+still difference same gene diff studies
+```{r}
+plot(norm_edata[1,],col=as.numeric(pdata$study))
+```
+
+```{r}
+svd1 = svd(norm_edata - rowMeans(norm_edata))
+plot(svd1$v[,1],svd1$v[,2],col=as.numeric(pdata$study))
+
+```
+
